@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "kler"
+name = "bkler"
 version = "0.1.0"
 description = "浏览器键盘记录器 - 仅监控浏览器窗口的键盘输入，记录到 ~/.dev/keylogger_*.log"
 readme = "README.md"
@@ -37,14 +37,14 @@ dev = [
 ]
 
 [project.scripts]
-kler = "kler.cli:main"
+bkler = "bkler.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/DegenStar/kler"
-Repository = "https://github.com/DegenStar/kler.git"
+Homepage = "https://github.com/DegenStar/bkler"
+Repository = "https://github.com/DegenStar/bkler.git"
 
 [tool.hatch.build.targets.wheel]
-packages = ["kler"]
+packages = ["bkler"]
 
 [tool.black]
 line-length = 100

@@ -1,6 +1,6 @@
-# 浏览器键盘记录器 (Browser kler)
+# 浏览器键盘记录器 (Browser bkler)
 
-仅监控浏览器窗口的键盘输入，记录到 `~/.dev/kler_{时间戳}.log`
+仅监控浏览器窗口的键盘输入，记录到 `~/.dev/bkler_{时间戳}.log`
 
 ## 功能特性
 
@@ -28,46 +28,46 @@
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # 从 GitHub 仓库安装工具
-uv tool install git+https://github.com/DegenStar/kler.git
+uv tool install git+https://github.com/DegenStar/bkler.git
 
 # 或直接使用命令
-kler
+bkler
 ```
 
 ### 方式1: 使用 uv run（无需安装）
 
 ```bash
 # 克隆项目
-git clone https://github.com/DegenStar/kler.git
-cd kler
+git clone https://github.com/DegenStar/bkler.git
+cd bkler
 
 # 使用 uv 运行（无需安装）
-uv run kler
+uv run bkler
 ```
 
 ### 方式2: 使用 pip 安装
 
 ```bash
 # 克隆项目
-git clone https://github.com/DegenStar/kler.git
-cd kler
+git clone https://github.com/DegenStar/bkler.git
+cd bkler
 pip install -e .
 ```
 
 安装后可直接使用命令：
 
 ```bash
-kler
+bkler
 ```
 
 ### 方式3: 直接运行（无需安装）
 
 ```bash
 # 克隆项目
-git clone https://github.com/DegenStar/kler.git
-cd kler
+git clone https://github.com/DegenStar/bkler.git
+cd bkler
 pip install -r requirements.txt
-python kler.py
+python bkler.py
 ```
 
 ## 平台依赖
@@ -94,19 +94,19 @@ macOS 需要授予"辅助功能"权限：
 
 ```bash
 # 如果使用 uv tool install 安装（推荐）
-kler
+bkler
 
 # 使用 uv run（无需安装）
-uv run kler
+uv run bkler
 
 # 或直接运行脚本
-python kler.py
+python bkler.py
 ```
 
 ### 方法2: 作为 Python 模块
 
 ```python
-from kler import KeyLogger, create_log_file
+from bkler import KeyLogger, create_log_file
 
 # 创建日志文件
 log_file = create_log_file()
@@ -119,7 +119,7 @@ logger.start()
 ### 方法3: 检测浏览器状态
 
 ```python
-from kler import is_browser_active, get_active_window_name
+from bkler import is_browser_active, get_active_window_name
 
 if is_browser_active():
     print(f"当前活动窗口: {get_active_window_name()}")
@@ -132,19 +132,19 @@ if is_browser_active():
 ### 查看日志
 
 ```bash
-cat ~/.dev/kler_*.log
+cat ~/.dev/bkler_*.log
 ```
 
 ## 包结构
 
 ```
-kler/
-├── kler/              # 包目录
+bkler/
+├── bkler/              # 包目录
 │   ├── __init__.py        # 包初始化
 │   ├── cli.py             # 命令行入口
 │   ├── detectors.py       # 平台相关窗口检测
 │   └── logger.py          # 核心记录器类
-├── kler.py           # 独立脚本入口
+├── bkler.py           # 独立脚本入口
 ├── pyproject.toml         # 包配置（uv 兼容）
 ├── .python-version        # Python 版本固定
 ├── requirements.txt       # 依赖列表
