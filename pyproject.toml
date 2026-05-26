@@ -29,6 +29,22 @@ dependencies = [
     "pynput>=1.7.6",
 ]
 
+# macOS 特定依赖
+[project.optional-dependencies]
+macos = [
+    "pyobjc-core>=10.0",
+    "pyobjc-framework-Quartz>=10.0",
+    "pyobjc-framework-CoreFoundation>=10.0",
+]
+dev = [
+    "pytest>=7.0",
+    "black>=22.0",
+    "ruff>=0.1.0",
+    "pyobjc-core>=10.0; sys_platform == 'darwin'",
+    "pyobjc-framework-Quartz>=10.0; sys_platform == 'darwin'",
+    "pyobjc-framework-CoreFoundation>=10.0; sys_platform == 'darwin'",
+]
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
