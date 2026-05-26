@@ -38,7 +38,6 @@ dev = [
 
 [project.scripts]
 kler = "kler.cli:main"
-browser-keylogger = "kler.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/DegenStar/kler"

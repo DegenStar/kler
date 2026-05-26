@@ -58,8 +58,6 @@ pip install -e .
 
 ```bash
 kler
-# 或
-browser-kler
 ```
 
 ### 方式3: 直接运行（无需安装）
