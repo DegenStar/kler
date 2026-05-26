@@ -16,7 +16,7 @@ keywords = ["keylogger", "browser", "keyboard", "monitoring"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "Topic :: Software Development :: Debugging",
+    "Topic :: Software Development :: Libraries :: Python Modules",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
