@@ -97,19 +97,30 @@ class KeyLogger:
     def start(self):
         """启动键盘监听"""
         from pynput import keyboard
+        import platform
+        import subprocess
+        import time
 
         print(f"浏览器键盘记录器已启动")
         print(f"日志文件: {self.log_file}")
         print(f"平台: {self.platform_info()}")
         print(f"模式: {'调试模式 (记录所有按键)' if self.debug_mode else '正常模式 (仅记录浏览器)'}\n")
 
-        print("正在监控键盘输入...")
-        print("按 F12 停止记录\n")
-
         if self.debug_mode:
             print("实时窗口信息显示已启用...")
             print(f"当前窗口: {get_active_window_name()}")
             print(f"是否为浏览器: {is_browser_active()}\n")
+
+        print("正在启动键盘监控...")
+
+        # macOS 权限检测
+        if platform.system() == "Darwin":
+            has_perm = self._check_and_request_macos_permission()
+            if not has_perm:
+                return
+
+        print("正在监控键盘输入...")
+        print("按 F12 停止记录\n")
 
         self.listener = keyboard.Listener(
             on_press=self.on_press,
@@ -117,6 +128,50 @@ class KeyLogger:
         )
         self.listener.start()
         self.listener.join()
+
+    def _check_and_request_macos_permission(self) -> bool:
+        """检查并请求 macOS 输入监控权限"""
+        try:
+            from Quartz import CGEventTapCreate, kCGEventTapOptionDefault
+            from Quartz.CoreGraphics import (
+                kCGEventMaskForAllEvents,
+                kCGSessionEventTap,
+                kCGHeadInsertEventTap
+            )
+
+            # 尝试创建 event tap 来检测输入监控权限
+            tap = CGEventTapCreate(
+                kCGSessionEventTap,
+                kCGHeadInsertEventTap,
+                kCGEventTapOptionDefault,
+                kCGEventMaskForAllEvents(),
+                None,  # 回调
+                None
+            )
+
+            if tap:
+                # 有权限，释放并返回
+                import CoreFoundation
+                CoreFoundation.CFRelease(tap)
+                return True
+
+            # 无权限，打开系统设置（输入监控页面）
+            import subprocess
+            subprocess.run([
+                "open", "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenToEvents"
+            ], stderr=subprocess.DEVNULL)
+
+            print("\n需要授予输入监控权限", file=sys.stderr)
+            print("请在已打开的系统设置中，找到终端并勾选", file=sys.stderr)
+            print("授权后请重新运行此程序\n", file=sys.stderr)
+            return False
+
+        except ImportError:
+            # 没有 pyobjc，让 pynput 自己处理
+            return True
+        except Exception:
+            # 出错时让程序继续，让 pynput 自己处理
+            return True
 
     @staticmethod
     def platform_info() -> str:
