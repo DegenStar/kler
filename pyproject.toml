@@ -41,8 +41,8 @@ kler = "kler.cli:main"
 browser-keylogger = "kler.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/YLX-STUDIO"
-Repository = "https://github.com/YLX-STUDIO/kler"
+Homepage = "https://github.com/DegenStar/kler"
+Repository = "https://github.com/DegenStar/kler.git"
 
 [tool.hatch.build.targets.wheel]
 packages = ["kler"]

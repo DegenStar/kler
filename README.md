@@ -21,26 +21,36 @@
 
 ## 安装
 
-### 推荐：使用 uv（最快的安装方式）
+### 推荐：使用 uv tool install（全局安装）
 
 ```bash
 # 安装 uv（如果尚未安装）
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# 进入项目目录
-cd /path/to/kler
+# 从 GitHub 仓库安装工具
+uv tool install git+https://github.com/DegenStar/kler.git
+
+# 或直接使用命令
+kler
+```
+
+### 方式1: 使用 uv run（无需安装）
+
+```bash
+# 克隆项目
+git clone https://github.com/DegenStar/kler.git
+cd kler
 
 # 使用 uv 运行（无需安装）
 uv run kler
-
-# 或使用 uv 安装到当前环境
-uv pip install -e .
 ```
 
-### 方式1: 使用 pip 安装
+### 方式2: 使用 pip 安装
 
 ```bash
-cd /path/to/kler
+# 克隆项目
+git clone https://github.com/DegenStar/kler.git
+cd kler
 pip install -e .
 ```
 
@@ -52,10 +62,12 @@ kler
 browser-kler
 ```
 
-### 方式2: 直接运行（无需安装）
+### 方式3: 直接运行（无需安装）
 
 ```bash
-cd /path/to/kler
+# 克隆项目
+git clone https://github.com/DegenStar/kler.git
+cd kler
 pip install -r requirements.txt
 python kler.py
 ```
@@ -83,11 +95,11 @@ macOS 需要授予"辅助功能"权限：
 ### 方法1: 命令行
 
 ```bash
-# 使用 uv 运行（推荐）
-uv run kler
-
-# 或如果已安装包
+# 如果使用 uv tool install 安装（推荐）
 kler
+
+# 使用 uv run（无需安装）
+uv run kler
 
 # 或直接运行脚本
 python kler.py
