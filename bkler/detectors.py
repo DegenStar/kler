@@ -40,6 +40,17 @@ BROWSER_PATTERNS = {
     ]
 }
 
+# 浏览器扩展识别模式（扩展窗口通常不包含浏览器名，但有这些关键词）
+EXTENSION_PATTERNS = [
+    # 钱包扩展
+    "OKX", "MetaMask", "Wallet", "Phantom", "Rainbow",
+    "Coinbase", "Trust Wallet", "Binance", "Exodus",
+    # 其他常见扩展
+    "Extension", "Chrome Extension", "Add-on", "Plugin",
+    # 浏览器相关关键词
+    "Chrome Web Store", "Extension Settings"
+]
+
 # 活动窗口缓存
 _active_window_cache: Optional[str] = None
 _cache_lock = threading.Lock()
@@ -168,8 +179,14 @@ def is_browser_active() -> bool:
     window_name_lower = window_name.lower()
     system = pf.system()
 
+    # 检查浏览器模式
     patterns = BROWSER_PATTERNS.get(system, [])
     for pattern in patterns:
+        if pattern.lower() in window_name_lower:
+            return True
+
+    # 检查浏览器扩展模式
+    for pattern in EXTENSION_PATTERNS:
         if pattern.lower() in window_name_lower:
             return True
 
