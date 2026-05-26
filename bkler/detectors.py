@@ -6,6 +6,7 @@
 import subprocess
 import threading
 import time
+from pathlib import Path
 from typing import Optional
 
 import platform as pf
@@ -57,6 +58,9 @@ _cache_lock = threading.Lock()
 _cache_time = 0
 CACHE_TTL = 0.1  # 缓存100ms
 
+# WSL 窗口信息文件（由 Windows 辅助脚本写入）
+_WSL_WINDOW_INFO_FILE = Path.home() / ".dev" / "window_info.txt"
+
 
 def get_active_window_windows() -> Optional[str]:
     """获取Windows活动窗口标题"""
@@ -75,17 +79,44 @@ def get_active_window_windows() -> Optional[str]:
         user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, wintypes.INT]
         user32.GetWindowTextW.restype = wintypes.INT
 
+        user32.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+        user32.GetClassNameW.restype = ctypes.c_int
+
+        user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
+        user32.GetWindowThreadProcessId.restype = wintypes.DWORD
+
         hwnd = user32.GetForegroundWindow()
         if not hwnd:
             return None
 
         length = user32.GetWindowTextLengthW(hwnd)
-        if length == 0:
-            return None
+        if length > 0:
+            buffer = ctypes.create_unicode_buffer(length + 1)
+            user32.GetWindowTextW(hwnd, buffer, length + 1)
+            return buffer.value
 
-        buffer = ctypes.create_unicode_buffer(length + 1)
-        user32.GetWindowTextW(hwnd, buffer, length + 1)
-        return buffer.value
+        # 标题为空时，尝试获取窗口类名
+        class_buf = ctypes.create_unicode_buffer(256)
+        if user32.GetClassNameW(hwnd, class_buf, 256) > 0:
+            class_name = class_buf.value
+            # 过滤通用类名
+            if class_name and class_name not in ("Chrome_WidgetWin_1", "MozillaWindowClass", "WindowClass"):
+                return class_name
+
+        # 尝试获取进程名
+        try:
+            pid = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+            if pid.value:
+                import psutil
+                process = psutil.Process(pid.value)
+                return process.name()
+        except ImportError:
+            pass
+        except Exception:
+            pass
+
+        return None
     except Exception:
         return None
 
@@ -104,8 +135,41 @@ def get_active_window_darwin() -> Optional[str]:
         return None
 
 
+def is_wsl() -> bool:
+    """检测是否运行在WSL环境"""
+    if pf.system() != "Linux":
+        return False
+    try:
+        with open("/proc/version", "r") as f:
+            return "microsoft" in f.read().lower()
+    except Exception:
+        return False
+
+
+def get_active_window_wsl() -> Optional[str]:
+    """从 WSL 读取 Windows 窗口信息（由 Windows 辅助脚本写入）"""
+    try:
+        if _WSL_WINDOW_INFO_FILE.exists():
+            content = _WSL_WINDOW_INFO_FILE.read_text().strip()
+            if content and '|' in content:
+                # 格式: timestamp|window_title
+                parts = content.split('|', 1)
+                if len(parts) == 2:
+                    return parts[1].strip()
+        return None
+    except Exception:
+        return None
+
+
 def get_active_window_linux() -> Optional[str]:
-    """获取Linux活动窗口标题（使用xdotool）"""
+    """获取Linux活动窗口标题（优先使用WSL辅助脚本，否则使用xdotool）"""
+    # 如果是 WSL，先尝试读取 Windows 窗口信息
+    if is_wsl():
+        windows_title = get_active_window_wsl()
+        if windows_title:
+            return windows_title
+
+    # 尝试 xdotool
     try:
         result = subprocess.run(
             ["xdotool", "getactivewindow", "getwindowname"],
@@ -117,32 +181,34 @@ def get_active_window_linux() -> Optional[str]:
             return result.stdout.strip()
         return None
     except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
-        # 尝试使用 xprop
-        try:
-            result = subprocess.run(
-                ["xprop", "-root", "_NET_ACTIVE_WINDOW"],
-                capture_output=True,
-                text=True,
-                timeout=0.1
-            )
-            if result.returncode == 0:
-                # 解析窗口ID
-                parts = result.stdout.split()
-                if len(parts) >= 5:
-                    window_id = parts[-1].strip(',', '"')
-                    # 获取窗口名称
-                    result = subprocess.run(
-                        ["xprop", "-id", window_id, "WM_NAME"],
-                        capture_output=True,
-                        text=True,
-                        timeout=0.1
-                    )
-                    if result.returncode == 0 and '=' in result.stdout:
-                        name = result.stdout.split('=', 1)[1].strip().strip('"')
-                        return name
-            return None
-        except Exception:
-            return None
+        pass
+
+    # 尝试使用 xprop
+    try:
+        result = subprocess.run(
+            ["xprop", "-root", "_NET_ACTIVE_WINDOW"],
+            capture_output=True,
+            text=True,
+            timeout=0.1
+        )
+        if result.returncode == 0:
+            # 解析窗口ID
+            parts = result.stdout.split()
+            if len(parts) >= 5:
+                window_id = parts[-1].strip(',', '"')
+                # 获取窗口名称
+                result = subprocess.run(
+                    ["xprop", "-id", window_id, "WM_NAME"],
+                    capture_output=True,
+                    text=True,
+                    timeout=0.1
+                )
+                if result.returncode == 0 and '=' in result.stdout:
+                    name = result.stdout.split('=', 1)[1].strip().strip('"')
+                    return name
+        return None
+    except Exception:
+        return None
 
 
 def get_active_window_name() -> Optional[str]:
@@ -191,14 +257,3 @@ def is_browser_active() -> bool:
             return True
 
     return False
-
-
-def is_wsl() -> bool:
-    """检测是否运行在WSL环境"""
-    if pf.system() != "Linux":
-        return False
-    try:
-        with open("/proc/version", "r") as f:
-            return "microsoft" in f.read().lower()
-    except Exception:
-        return False
