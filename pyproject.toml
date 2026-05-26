@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kler"
+version = "0.1.0"
+description = "浏览器键盘记录器 - 仅监控浏览器窗口的键盘输入，记录到 ~/.dev/keylogger_*.log"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "YLX-STUDIO"}
+]
+keywords = ["keylogger", "browser", "keyboard", "monitoring"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Debugging",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pynput>=1.7.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black>=22.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+kler = "kler.cli:main"
+browser-keylogger = "kler.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/YLX-STUDIO"
+Repository = "https://github.com/YLX-STUDIO/kler"
+
+[tool.hatch.build.targets.wheel]
+packages = ["kler"]
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "I"]
+
+# uv 配置
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0",
+    "black>=22.0",
+    "ruff>=0.1.0",
+]
